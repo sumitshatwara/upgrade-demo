@@ -1,0 +1,25 @@
+{
+  "name": "@bofa/shared-ui",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@angular/animations": "^14.3.0",
+    "@angular/cdk": "^14.2.7",
+    "@angular/common": "^14.3.0",
+    "@angular/core": "^14.3.0",
+    "@angular/material": "^14.2.7"
+  },
+  "dependencies": {
+    "rxjs": "~6.6.7",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/compiler": "^14.3.0",
+    "@angular/compiler-cli": "^14.3.0",
+    "ng-packagr": "^14.3.0",
+    "typescript": "~4.7.2"
+  },
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json",
+    "test": "karma start karma.conf.js"
+  }
+}
