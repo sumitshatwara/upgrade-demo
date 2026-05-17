@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, lastValueFrom } from 'rxjs';
 
 export interface AccountSummary {
   accountId: string;
@@ -57,9 +57,7 @@ export interface TransactionPage {
 export class BankingApiService {
   private readonly BASE_URL = 'https://api.bankofamerica.internal/v2/retail';
   private alertSubject$ = new Subject<number>();
-
-  // MIGRATION TARGET: private http = inject(HttpClient);
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   getAccountSummaries(): Observable<AccountSummary[]> {
     return this.http.get<AccountSummary[]>(`${this.BASE_URL}/accounts/summary`);
@@ -75,22 +73,10 @@ export class BankingApiService {
     return this.http.get<TransactionPage>(`${this.BASE_URL}/transactions`, { params });
   }
 
-  /**
-   * Returns a snapshot of account summaries as a Promise.
-   *
-   * RxJS 6.x toPromise() — MIGRATION TARGET (Phase 4):
-   *   Replace:  return obs.toPromise();
-   *   With:     import { lastValueFrom } from 'rxjs';
-   *             return lastValueFrom(obs);
-   *
-   * Reason: toPromise() is deprecated in RxJS 7 and removed in RxJS 8.
-   * lastValueFrom() is the direct semantic equivalent.
-   */
-  getAccountSummarySnapshot(): Promise<AccountSummary[] | undefined> {
-    // RxJS 6.x pattern — MIGRATION TARGET (Phase 4)
-    return this.http
-      .get<AccountSummary[]>(`${this.BASE_URL}/accounts/summary`)
-      .toPromise();
+  getAccountSummarySnapshot(): Promise<AccountSummary[]> {
+    return lastValueFrom(
+      this.http.get<AccountSummary[]>(`${this.BASE_URL}/accounts/summary`)
+    );
   }
 
   getAlertStream(): Observable<number> {

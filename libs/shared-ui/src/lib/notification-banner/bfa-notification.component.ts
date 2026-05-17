@@ -6,22 +6,15 @@ import {
   ChangeDetectionStrategy,
   HostBinding
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error';
 
-/**
- * BofA Shared Notification Banner.
- *
- * Used across all three consumer apps for system alerts, error states,
- * and compliance notifications.
- *
- * MIGRATION NOTE (Devin — Phase 3):
- *   Add standalone: true with imports: [CommonModule, MatIconModule].
- *   Remove from SharedUiModule declarations.
- */
 @Component({
   selector: 'bofa-notification-banner',
-  // NOT standalone — declared in SharedUiModule
+  standalone: true,
+  imports: [CommonModule, MatIconModule],
   template: `
     <div
       class="bofa-notification bofa-notification--{{ type }}"
@@ -29,17 +22,20 @@ export type NotificationType = 'info' | 'success' | 'warning' | 'error';
       [attr.aria-live]="type === 'error' ? 'assertive' : 'polite'">
       <mat-icon class="bofa-notification__icon">{{ iconMap[type] }}</mat-icon>
       <div class="bofa-notification__content">
-        <span *ngIf="title" class="bofa-notification__title">{{ title }}</span>
+        @if (title) {
+          <span class="bofa-notification__title">{{ title }}</span>
+        }
         <span class="bofa-notification__message">{{ message }}</span>
       </div>
-      <button
-        *ngIf="dismissible"
-        class="bofa-notification__dismiss"
-        (click)="dismiss()"
-        aria-label="Dismiss notification"
-        type="button">
-        <mat-icon>close</mat-icon>
-      </button>
+      @if (dismissible) {
+        <button
+          class="bofa-notification__dismiss"
+          (click)="dismiss()"
+          aria-label="Dismiss notification"
+          type="button">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush

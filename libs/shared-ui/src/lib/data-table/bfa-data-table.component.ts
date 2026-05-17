@@ -4,13 +4,14 @@ import {
   Output,
   EventEmitter,
   ViewChild,
-  OnInit,
   AfterViewInit,
   ChangeDetectionStrategy
 } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatSort, Sort } from '@angular/material/sort';
-import { MatPaginator } from '@angular/material/paginator';
+import { CommonModule } from '@angular/common';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatIconModule } from '@angular/material/icon';
 
 export interface TableColumn<T = any> {
   key: string;
@@ -21,73 +22,39 @@ export interface TableColumn<T = any> {
   formatter?: (value: any, row: T) => string;
 }
 
-/**
- * BofA Shared Data Table — wraps Angular Material v14 mat-table with sort.
- *
- * ─────────────────────────────────────────────────────────────────────
- * ANGULAR MATERIAL v14 SORT BINDING (current — deprecated in v18):
- *
- *   <mat-table
- *     [dataSource]="dataSource"
- *     matSort
- *     [matSortActive]="initialSortColumn"
- *     [matSortDirection]="initialSortDirection"
- *     (matSortChange)="onSortChange($event)">
- *
- *   matSortActive and matSortDirection are INPUT bindings on the mat-table
- *   host element in v14. They are NOT the same as the MatSort directive
- *   properties in v18.
- * ─────────────────────────────────────────────────────────────────────
- *
- * MIGRATION NOTE (Devin — Phase 5 — Angular Material v14 → v18):
- *   In Angular Material v18, [matSortActive] and [matSortDirection] inputs
- *   were removed from mat-table. Initialize sort state directly on MatSort:
- *
- *     // AfterViewInit:
- *     this.sort.active = 'transactionDate';
- *     this.sort.direction = 'desc';
- *     this.sort.sortChange.emit();
- *
- *   The (matSortChange) event type changes from Sort → SortState in v18.
- *   MatSortModule must be explicitly imported in standalone components.
- *   'legacy' form field appearance is removed — replace with 'outline'.
- *
- * MIGRATION NOTE (Devin — Phase 3):
- *   Add standalone: true with imports: [MatTableModule, MatSortModule,
- *   MatPaginatorModule, CommonModule, MatIconModule].
- */
 @Component({
   selector: 'bofa-data-table',
-  // NOT standalone — declared in SharedUiModule
+  standalone: true,
+  imports: [CommonModule, MatTableModule, MatSortModule, MatPaginatorModule, MatIconModule],
   template: `
     <div class="bofa-table-wrapper" [class.bofa-table--loading]="isLoading">
       <table
         mat-table
         [dataSource]="dataSource"
         matSort
-        [matSortActive]="initialSortColumn"
-        [matSortDirection]="initialSortDirection"
         (matSortChange)="onSortChange($event)"
         [attr.aria-label]="ariaLabel"
         class="bofa-data-table">
 
-        <ng-container *ngFor="let col of columns" [matColumnDef]="col.key">
-          <th
-            mat-header-cell
-            *matHeaderCellDef
-            [mat-sort-header]="col.sortable ? col.key : ''"
-            [disabled]="!col.sortable"
-            [style.width]="col.width"
-            [style.text-align]="col.align || 'left'">
-            {{ col.header }}
-          </th>
-          <td
-            mat-cell
-            *matCellDef="let row"
-            [style.text-align]="col.align || 'left'">
-            {{ col.formatter ? col.formatter(row[col.key], row) : row[col.key] }}
-          </td>
-        </ng-container>
+        @for (col of columns; track col.key) {
+          <ng-container [matColumnDef]="col.key">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              [mat-sort-header]="col.sortable ? col.key : ''"
+              [disabled]="!col.sortable"
+              [style.width]="col.width"
+              [style.text-align]="col.align || 'left'">
+              {{ col.header }}
+            </th>
+            <td
+              mat-cell
+              *matCellDef="let row"
+              [style.text-align]="col.align || 'left'">
+              {{ col.formatter ? col.formatter(row[col.key], row) : row[col.key] }}
+            </td>
+          </ng-container>
+        }
 
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
@@ -114,20 +81,21 @@ export interface TableColumn<T = any> {
         </tr>
       </table>
 
-      <mat-paginator
-        *ngIf="showPaginator"
-        [length]="totalCount"
-        [pageSize]="pageSize"
-        [pageSizeOptions]="[10, 25, 50, 100]"
-        (page)="onPageChange($event)"
-        showFirstLastButtons
-        aria-label="Select page">
-      </mat-paginator>
+      @if (showPaginator) {
+        <mat-paginator
+          [length]="totalCount"
+          [pageSize]="pageSize"
+          [pageSizeOptions]="[10, 25, 50, 100]"
+          (page)="onPageChange($event)"
+          showFirstLastButtons
+          aria-label="Select page">
+        </mat-paginator>
+      }
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BfaDataTableComponent implements OnInit, AfterViewInit {
+export class BfaDataTableComponent implements AfterViewInit {
   @Input() columns: TableColumn[] = [];
   @Input() dataSource = new MatTableDataSource<any>([]);
   @Input() displayedColumns: string[] = [];
@@ -138,7 +106,6 @@ export class BfaDataTableComponent implements OnInit, AfterViewInit {
   @Input() ariaLabel = 'Data table';
   @Input() actionsTemplate: any;
 
-  // Angular Material v14 sort binding inputs — see migration note above
   @Input() initialSortColumn = '';
   @Input() initialSortDirection: 'asc' | 'desc' | '' = 'desc';
 
@@ -151,10 +118,12 @@ export class BfaDataTableComponent implements OnInit, AfterViewInit {
 
   selectedRow: any = null;
 
-  ngOnInit(): void {}
-
   ngAfterViewInit(): void {
-    if (this.sort) this.dataSource.sort = this.sort;
+    if (this.sort) {
+      this.sort.active = this.initialSortColumn;
+      this.sort.direction = this.initialSortDirection;
+      this.dataSource.sort = this.sort;
+    }
     if (this.paginator) this.dataSource.paginator = this.paginator;
   }
 
