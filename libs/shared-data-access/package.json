@@ -2,9 +2,17 @@
   "name": "@bofa/shared-data-access",
   "version": "2.0.0",
   "main": "src/lib/api/banking-api.service.ts",
+  "scripts": {
+    "build": "tsc --noEmit -p tsconfig.json"
+  },
   "dependencies": {
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/common": "~18.2.0",
+    "@angular/core": "~18.2.0",
+    "typescript": "~5.4.0"
   },
   "peerDependencies": {
     "@angular/common": "~18.2.0",
