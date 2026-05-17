@@ -6,6 +6,38 @@
 
 ---
 
+## Phase 0 — Preparation & Safety Net
+
+**Objective:** Establish a stable baseline, upgrade Node.js and TypeScript, and set up infrastructure for a safe migration.
+
+### Prerequisites
+
+1. **Upgrade Node.js** from 16 (EOL) to **Node 18 LTS** or **Node 20 LTS**:
+   - Angular 18 requires Node 18.13+.
+   - Update `.nvmrc` or `.node-version` to the target version.
+   - Verify CI pipelines use the same Node version.
+
+2. **Lock down the Angular 14 baseline:**
+   - Tag the current working state: `git tag angular-14-baseline`.
+   - Verify all existing tests pass on Angular 14 — this is the regression baseline.
+   - Record current test coverage numbers for comparison after migration.
+
+3. **TypeScript version alignment:**
+   - Angular 18 requires TypeScript 5.4+. Current repo uses TypeScript 4.7.x.
+   - Plan incremental strictness: enable `strictNullChecks` and `strictPropertyInitialization` early to surface type issues before the framework upgrade.
+   - Update `tsconfig.json` `strict: false` → enable individual strict flags incrementally.
+
+4. **Dry-run Angular update schematics:**
+   ```bash
+   npx ng update @angular/core@18 @angular/cli@18 --dry-run
+   ```
+   Review the output to understand what the CLI will auto-migrate and what requires manual intervention.
+
+5. **Set up parallel CI pipeline** (optional but recommended):
+   - Configure CI to run both old and new builds during migration so regressions are caught immediately.
+
+---
+
 ## Phase 1 — Codebase Analysis & Migration Plan
 
 **Objective:** Full dependency and pattern audit. Open migration plan PR.
@@ -41,9 +73,18 @@
 
 **Objective:** Upgrade the shared component library first to unblock all consumers.
 
+### Incremental Version Strategy
+
+Rather than jumping directly from Angular 14 to 18, use Angular's `ng update` schematics to step through intermediate versions. This catches breaking changes incrementally:
+
+1. **14 → 16** (picks up standalone component support, `inject()`, initial deprecations).
+2. **16 → 18** (final target with full standalone bootstrap, new control flow, MD3).
+
+At each step, run `ng update` to apply automatic migrations before making manual fixes.
+
 ### Steps
 
-1. Update `@bofa/shared-ui/package.json`:
+1. Update `@bofa/shared-ui/package.json` (via incremental `ng update`):
    - `@angular/core` → `^18.0.0`
    - `@angular/material` → `^18.0.0`
    - `@angular/cdk` → `^18.0.0`
@@ -69,11 +110,31 @@
 > (3 apps × build + test = 6 checks, plus shared-data-access build and type check = 8 total)
 > If any check fails, fix shared-ui and re-run. Do NOT proceed with broken consumers.
 
+### Regression Checkpoint
+
+Run the full test suite and confirm all tests that passed on the Angular 14 baseline still pass.
+
 ---
 
 ## Phase 3 — NgModule → Standalone Components
 
 **Objective:** Migrate all app modules to standalone bootstrap. Apply `angular-standards.md`.
+
+### Sub-PR Strategy
+
+Split this phase into **one PR per application** to keep reviews manageable and isolate blast radius:
+
+- **PR 3a:** `retail-banking-portal` (highest risk — owns SSO auth flow)
+- **PR 3b:** `corporate-dashboard`
+- **PR 3c:** `mobile-api-gateway`
+
+### Leverage `ng update` Schematics
+
+Before manual changes, run Angular's automatic migration schematics:
+```bash
+npx ng generate @angular/core:standalone
+```
+This handles many mechanical conversions (standalone flag, imports array, bootstrap migration). Review the output and fix any remaining issues manually.
 
 ### Steps (per application — repeat for all 3 apps)
 
@@ -99,6 +160,10 @@
 
 5. PR must include: type-check passing, no NgModule declarations in new code,
    `security-policy.md` compliance verified for SSO token chain.
+
+### Regression Checkpoint
+
+After each sub-PR, run the full test suite + `validate-downstream.sh` to confirm no regressions.
 
 ---
 
@@ -143,6 +208,10 @@
 
 4. Run full test suite after changes to verify no regression in async behavior.
 
+### Regression Checkpoint
+
+Run the full test suite. Pay special attention to async tests — `lastValueFrom` behaves differently from `toPromise()` on empty observables (throws `EmptyError` instead of resolving `undefined`).
+
 ---
 
 ## Phase 5 — Angular Material v14 → v18 API Updates
@@ -165,6 +234,10 @@
 2. Search for `appearance="legacy"` — replace with `appearance="outline"` or `appearance="fill"`.
 3. Update all `(matSortChange)` event handlers: `$event: Sort` → `$event: SortState`.
 4. Verify Angular Material theming: migrate from `mat.define-legacy-theme()` to `mat.define-theme()`.
+
+### Regression Checkpoint
+
+Run the full test suite + visually verify Material component rendering in all 3 apps. Confirm sort behavior, form field styling, and button theming are correct.
 
 ---
 
@@ -196,3 +269,18 @@
    - Devin Review results attached.
    - Coverage report from `check-coverage.sh` showing ≥80% on all compliance paths.
    - Sign-off from Platform Security (required for SSO/auth changes).
+
+---
+
+## Appendix — Summary of Improvements
+
+| Improvement | Where Applied |
+|---|---|
+| **Phase 0 — Preparation & Safety Net** | New phase: Node.js upgrade, TypeScript alignment, baseline tagging, dry-run schematics |
+| **Incremental version stepping (14→16→18)** | Phase 2: use `ng update` at each major version instead of a single jump |
+| **`ng update` schematics automation** | Phases 2, 3: leverage Angular CLI auto-migrations before manual fixes |
+| **Sub-PRs per app in Phase 3** | Phase 3: one PR per app (3a/3b/3c) to isolate blast radius |
+| **Regression checkpoints after every phase** | Phases 2–5: explicit "run full test suite" step after each phase |
+| **Node.js upgrade (16 → 18/20 LTS)** | Phase 0: Angular 18 requires Node 18.13+ |
+| **TypeScript incremental strictness** | Phase 0: enable strict flags early to catch type issues before framework upgrade |
+| **`lastValueFrom` behavior note** | Phase 4: warning about `EmptyError` difference from `toPromise()` |
