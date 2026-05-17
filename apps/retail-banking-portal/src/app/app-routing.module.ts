@@ -24,23 +24,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     data: { title: 'Transactions', requiresRole: 'retail-user' }
   },
-  {
-    path: 'accounts',
-    loadChildren: () =>
-      import('./accounts/accounts.module').then(m => m.AccountsModule),
-    canActivate: [AuthGuard]
-  },
-  {
-    path: 'transfers',
-    loadChildren: () =>
-      import('./transfers/transfers.module').then(m => m.TransfersModule),
-    canActivate: [AuthGuard]
-  },
-  {
-    path: 'auth',
-    loadChildren: () =>
-      import('./auth/auth.module').then(m => m.AuthModule)
-  },
+
   {
     path: '**',
     redirectTo: '/dashboard'

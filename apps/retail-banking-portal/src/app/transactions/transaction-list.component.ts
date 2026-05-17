@@ -15,7 +15,7 @@ import { takeUntil, debounceTime, switchMap } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
 
 import { Transaction, TransactionFilter, TransactionCategory } from './transaction.model';
-import { BankingApiService } from '../../../libs/shared-data-access/src/lib/api/banking-api.service';
+import { BankingApiService } from '@bofa/shared-data-access';
 import { BfaDataTableComponent } from '@bofa/shared-ui';
 
 /**

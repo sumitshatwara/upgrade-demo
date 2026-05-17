@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { Subject, combineLatest } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { BankingApiService, AccountSummary } from '../../../libs/shared-data-access/src/lib/api/banking-api.service';
+import { BankingApiService, AccountSummary } from '@bofa/shared-data-access';
 import { AnalyticsService } from '../analytics/analytics.service';
 import { SsoAuthService } from '../auth/sso-auth.service';
 
