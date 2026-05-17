@@ -3,9 +3,11 @@ import {
   HttpInterceptor,
   HttpRequest,
   HttpHandler,
-  HttpEvent
+  HttpEvent,
+  HttpResponse
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { SsoAuthService } from '../../auth/sso-auth.service';
 import { environment } from '../../../environments/environment';
 
@@ -24,11 +26,15 @@ export class AuditLoggingInterceptor implements HttpInterceptor {
         .set('X-Client-App', environment.appName)
     });
 
-    if (!environment.production) {
-      console.info(`[AUDIT] ${req.method} ${this.sanitizeUrl(req.url)} — CID: ${correlationId}`);
-    }
+    console.info(`[AUDIT] ${req.method} ${this.sanitizeUrl(req.url)} — CID: ${correlationId}`);
 
-    return next.handle(auditedReq);
+    return next.handle(auditedReq).pipe(
+      tap(event => {
+        if (event instanceof HttpResponse) {
+          console.info(`[AUDIT] Response ${event.status} for ${req.method} ${this.sanitizeUrl(req.url)} — CID: ${correlationId}`);
+        }
+      })
+    );
   }
 
   private extractCorrelationId(token: string): string {

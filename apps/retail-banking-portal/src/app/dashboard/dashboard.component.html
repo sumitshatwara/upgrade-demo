@@ -77,8 +77,7 @@
             [queryParams]="{ accountId: account.accountId }">
             View Transactions
           </bofa-button>
-          <bofa-button variant="ghost" size="sm" [routerLink]="['/transfers']"
-            [queryParams]="{ fromAccount: account.accountId }">
+          <bofa-button variant="ghost" size="sm" [disabled]="true">
             Transfer
           </bofa-button>
         </div>
