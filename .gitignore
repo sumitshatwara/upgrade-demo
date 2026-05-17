@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+node_modules
+
+# Build output
+dist/
+.angular/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Lock files (per-app, not root)
+package-lock.json

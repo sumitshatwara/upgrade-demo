@@ -2,9 +2,15 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
+    "paths": {
+      "@bofa/shared-ui": ["../../libs/shared-ui/src/lib/index.ts"],
+      "@bofa/shared-data-access": ["../../libs/shared-data-access/src/lib/api/banking-api.service.ts"],
+      "@bofa/shared-data-access/*": ["../../libs/shared-data-access/src/*"]
+    },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": false,
+    "skipLibCheck": true,
     "noImplicitOverride": false,
     "noPropertyAccessFromIndexSignature": false,
     "noImplicitReturns": false,
@@ -22,6 +28,11 @@
       "dom"
     ]
   },
+  "include": [
+    "src/**/*.ts",
+    "../../libs/shared-ui/src/**/*.ts",
+    "../../libs/shared-data-access/src/**/*.ts"
+  ],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": false,
