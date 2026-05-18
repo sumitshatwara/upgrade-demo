@@ -45,8 +45,7 @@ const routerOptions: ExtraOptions = {
   anchorScrolling: 'enabled',
   onSameUrlNavigation: 'reload',
   // Legacy option — use withRouterConfig() post-migration
-  enableTracing: false,
-  relativeLinkResolution: 'legacy'
+  enableTracing: false
 };
 
 @NgModule({
