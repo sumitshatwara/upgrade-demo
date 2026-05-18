@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
@@ -27,20 +27,14 @@ export interface AuthState {
  *
  * SECURITY POLICY (security-policy.md):
  *   - All HTTP interceptors must include audit logging.
- *   - SSO token chain must be preserved across all auth guard migrations.
+ *   - SSO token chain preserved across auth guard migration.
  *   - No external auth calls outside this service.
- *   - CanActivate must be migrated to functional guards (Phase 3).
- *
- * MIGRATION NOTE (Devin — Phase 3):
- *   Constructor injection (private http: HttpClient) must be replaced with
- *   inject(HttpClient) per angular-standards.md.
- *   Example: private http = inject(HttpClient);
- *   Remove constructor entirely if no other initialization logic remains.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class SsoAuthService {
+  private readonly http = inject(HttpClient);
   private readonly SSO_ENDPOINT = `${environment.ssoBaseUrl}/saml/authenticate`;
   private readonly TOKEN_VALIDATE_URL = `${environment.ssoBaseUrl}/saml/validate`;
 
@@ -51,8 +45,7 @@ export class SsoAuthService {
     sessionExpiry: null
   });
 
-  // MIGRATION TARGET: Replace constructor injection with inject()
-  constructor(private http: HttpClient) {
+  constructor() {
     this.restoreSessionFromStorage();
   }
 
