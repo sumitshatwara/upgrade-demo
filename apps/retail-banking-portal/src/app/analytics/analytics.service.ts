@@ -1,10 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject, from } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
-// Proprietary BofA Analytics SDK — loaded via window global (external bundle)
 declare global {
   interface Window {
     BofAAnalyticsSDK: {
@@ -39,24 +38,16 @@ export interface SpendingInsights {
  * The SDK is loaded as an external global bundle (window.BofAAnalyticsSDK)
  * to avoid bundling it into the Angular build output.
  * See angular.json scripts[] for the SDK bundle path.
- *
- * MIGRATION NOTE (Devin — Phase 3):
- *   Constructor injection → inject() per angular-standards.md.
- *   Consider wrapping SDK initialization in an APP_INITIALIZER factory.
- *
- * MIGRATION NOTE (Devin — Phase 4):
- *   from(promise).pipe() pattern is correct for Observable wrapping.
- *   No toPromise() usage in this service — already using from() adapter.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class AnalyticsService {
+  private readonly http = inject(HttpClient);
   private sdkInitialized = false;
   private eventQueue: Array<{ category: string; action: string; label?: string }> = [];
 
-  // MIGRATION TARGET: Replace with inject(HttpClient)
-  constructor(private http: HttpClient) {
+  constructor() {
     this.initializeSdk();
   }
 

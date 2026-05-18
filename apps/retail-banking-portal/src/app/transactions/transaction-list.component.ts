@@ -4,46 +4,52 @@ import {
   OnDestroy,
   ViewChild,
   ChangeDetectionStrategy,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  inject
 } from '@angular/core';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { MatSort, Sort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatSort, Sort, MatSortModule } from '@angular/material/sort';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil, debounceTime, switchMap } from 'rxjs/operators';
-import { FormControl } from '@angular/forms';
+import { takeUntil, debounceTime } from 'rxjs/operators';
 
 import { Transaction, TransactionFilter, TransactionCategory } from './transaction.model';
 import { BankingApiService } from '@bofa/shared-data-access';
-import { BfaDataTableComponent } from '@bofa/shared-ui';
+import { SharedUiModule, BfaDataTableComponent } from '@bofa/shared-ui';
 
-/**
- * Transaction List — displays paginated, sortable transaction history.
- *
- * Consumes @bofa/shared-ui BfaDataTableComponent (Angular Material v14).
- *
- * MIGRATION NOTE (Devin — Phase 5):
- *   MatSort binding has changed in Angular Material v18.
- *   Current v14 pattern: [matSortActive] + [matSortDirection] inputs on <mat-table>.
- *   Angular Material v18 pattern uses MatSortModule with matSort directive.
- *   See shared-ui/bfa-data-table migration notes for the full diff.
- *
- * MIGRATION NOTE (Devin — Phase 3):
- *   Add standalone: true; add imports array with MatTableModule, MatSortModule,
- *   MatPaginatorModule, BfaDataTableComponent (standalone export from shared-ui).
- *   Remove from app.module.ts declarations.
- */
 @Component({
   selector: 'bofa-transaction-list',
+  standalone: true,
+  imports: [
+    CurrencyPipe,
+    DatePipe,
+    ReactiveFormsModule,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    SharedUiModule
+  ],
   templateUrl: './transaction-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TransactionListComponent implements OnInit, OnDestroy {
 
-  @ViewChild(MatSort, { static: false }) sort!: MatSort;
-  @ViewChild(MatPaginator, { static: false }) paginator!: MatPaginator;
-  @ViewChild(BfaDataTableComponent, { static: false }) dataTable!: BfaDataTableComponent;
+  @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(BfaDataTableComponent) dataTable!: BfaDataTableComponent;
 
   displayedColumns: string[] = [
     'transactionDate',
@@ -71,13 +77,9 @@ export class TransactionListComponent implements OnInit, OnDestroy {
   activeFilter: TransactionFilter = { pageSize: 25, pageIndex: 0 } as any;
 
   private destroy$ = new Subject<void>();
-
-  // MIGRATION TARGET: Replace constructor injection with inject()
-  constructor(
-    private bankingApi: BankingApiService,
-    private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
-  ) {}
+  private bankingApi = inject(BankingApiService);
+  private route = inject(ActivatedRoute);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     // Read accountId from query params (set by dashboard account card links)
