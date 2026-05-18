@@ -17,6 +17,7 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.json",
+            "preserveSymlinks": true,
             "assets": [],
             "styles": [],
             "scripts": []
