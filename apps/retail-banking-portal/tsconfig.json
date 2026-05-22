@@ -33,6 +33,11 @@
     "../../libs/shared-ui/src/**/*.ts",
     "../../libs/shared-data-access/src/**/*.ts"
   ],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "../../libs/shared-ui/src/**/*.spec.ts",
+    "../../libs/shared-data-access/src/**/*.spec.ts"
+  ],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": false,
