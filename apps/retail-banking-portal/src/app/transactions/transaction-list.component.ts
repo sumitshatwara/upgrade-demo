@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { MatSort, Sort, MatSortModule } from '@angular/material/sort';
+import { MatSort, SortDirection, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -132,7 +132,7 @@ export class TransactionListComponent implements OnInit, OnDestroy {
       });
   }
 
-  onSortChange(sort: Sort): void {
+  onSortChange(sort: { active: string; direction: SortDirection }): void {
     this.activeFilter = {
       ...this.activeFilter,
       sortField: sort.active,

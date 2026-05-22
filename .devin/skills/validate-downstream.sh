@@ -111,11 +111,21 @@ for CONSUMER in "${CONSUMERS[@]}"; do
     FAILED_APPS+=("$APP_NAME (ng build failed)")
   fi
 
-  echo -n "    ng test (headless) ... "
-  if [ -f "$APP_PATH/karma.conf.js" ] || [ -f "$APP_PATH/tsconfig.spec.json" ]; then
+  echo -n "    test (headless) ... "
+  if [ -f "$APP_PATH/jest.config.ts" ] || [ -f "$APP_PATH/jest.config.js" ]; then
+    TEST_OUTPUT=$(cd "$APP_PATH" && npx jest --config jest.config.js --passWithNoTests 2>&1) || true
+    if echo "$TEST_OUTPUT" | grep -qE "passed|no test"; then
+      echo -e "${GREEN}✓ (jest)${RESET}"
+      PASS_COUNT=$((PASS_COUNT + 1))
+    else
+      echo -e "${RED}✗${RESET}"
+      FAIL_COUNT=$((FAIL_COUNT + 1))
+      FAILED_APPS+=("$APP_NAME (jest test failed)")
+    fi
+  elif [ -f "$APP_PATH/karma.conf.js" ]; then
     TEST_OUTPUT=$(cd "$APP_PATH" && npx ng test --watch=false --no-watch 2>&1) || true
     if echo "$TEST_OUTPUT" | grep -q "SUCCESS"; then
-      echo -e "${GREEN}✓${RESET}"
+      echo -e "${GREEN}✓ (karma)${RESET}"
       PASS_COUNT=$((PASS_COUNT + 1))
     else
       echo -e "${RED}✗${RESET}"

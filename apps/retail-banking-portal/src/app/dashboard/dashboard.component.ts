@@ -64,15 +64,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadDashboardData(): void {
-    // RxJS 6 combineLatest array syntax
-    // MIGRATION TARGET (Phase 4): combineLatest({ accounts: ..., score: ... })
-    combineLatest([
-      this.bankingApi.getAccountSummaries(),
-      this.analyticsService.getSpendingScore()
-    ])
+    combineLatest({
+      accounts: this.bankingApi.getAccountSummaries(),
+      spendingScore: this.analyticsService.getSpendingScore()
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ([accounts, spendingScore]) => {
+        next: ({ accounts, spendingScore }) => {
           const totalBalance = accounts.reduce((sum, acc) => sum + acc.availableBalance, 0);
           const pendingTransactions = accounts.reduce((sum, acc) => sum + acc.pendingCount, 0);
 

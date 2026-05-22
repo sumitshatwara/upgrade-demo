@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -49,25 +49,16 @@ export interface FraudRiskAssessment {
  *   Array syntax still works in RxJS 7 but is considered legacy.
  * ─────────────────────────────────────────────────────────────────────
  *
- * MIGRATION NOTE (Devin — Phase 3):
- *   Constructor injection → inject(HttpClient).
+ * Phase 4: Constructor injection → inject(HttpClient).
+ * Phase 4: combineLatest array syntax → object syntax (RxJS 7).
  */
 @Injectable({
   providedIn: 'root'
 })
 export class FraudDetectionService {
   private readonly FRAUD_API = 'https://api.bankofamerica.internal/v2/fraud';
+  private http = inject(HttpClient);
 
-  // MIGRATION TARGET: private http = inject(HttpClient);
-  constructor(private http: HttpClient) {}
-
-  /**
-   * Assesses fraud risk by combining real-time signals with
-   * the customer's behavioral profile.
-   *
-   * RxJS 6.x combineLatest ARRAY SYNTAX — MIGRATION TARGET (Phase 4).
-   * Replace with: combineLatest({ signals: signals$, profile: profile$ })
-   */
   assessTransactionRisk(transactionId: string, customerId: string): Observable<FraudRiskAssessment> {
     const signals$ = this.http.get<FraudSignal[]>(
       `${this.FRAUD_API}/signals/${transactionId}`
@@ -76,25 +67,17 @@ export class FraudDetectionService {
       `${this.FRAUD_API}/profile/${customerId}`
     );
 
-    // RxJS 6 array syntax — MIGRATION TARGET
-    // Replace with: combineLatest({ signals: signals$, profile: profile$ })
-    return combineLatest([signals$, profile$]).pipe(
-      map(([signals, profile]) => this.buildRiskAssessment(transactionId, signals, profile))
+    return combineLatest({ signals: signals$, profile: profile$ }).pipe(
+      map(({ signals, profile }) => this.buildRiskAssessment(transactionId, signals, profile))
     );
   }
 
-  /**
-   * Monitors multiple transactions simultaneously.
-   * Uses combineLatest array syntax — see migration note above.
-   *
-   * MIGRATION TARGET (Phase 4): Use object syntax with dynamic keys.
-   */
   monitorTransactionBatch(transactionIds: string[]): Observable<FraudSignal[][]> {
     const signalObservables = transactionIds.map(id =>
       this.http.get<FraudSignal[]>(`${this.FRAUD_API}/signals/${id}`)
     );
 
-    // RxJS 6.x combineLatest array syntax — MIGRATION TARGET
+    // Dynamic array — object syntax not applicable for variable-length inputs
     return combineLatest(signalObservables);
   }
 
