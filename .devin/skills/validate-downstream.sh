@@ -113,7 +113,7 @@ for CONSUMER in "${CONSUMERS[@]}"; do
 
   echo -n "    test (headless) ... "
   if [ -f "$APP_PATH/jest.config.ts" ] || [ -f "$APP_PATH/jest.config.js" ]; then
-    TEST_OUTPUT=$(cd "$REPO_ROOT/apps/retail-banking-portal" && npx jest --config jest.config.js --passWithNoTests 2>&1) || true
+    TEST_OUTPUT=$(cd "$APP_PATH" && npx jest --config jest.config.js --passWithNoTests 2>&1) || true
     if echo "$TEST_OUTPUT" | grep -qE "passed|no test"; then
       echo -e "${GREEN}✓ (jest)${RESET}"
       PASS_COUNT=$((PASS_COUNT + 1))
