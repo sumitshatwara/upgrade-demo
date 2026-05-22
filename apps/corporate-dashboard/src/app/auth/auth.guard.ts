@@ -1,9 +1,8 @@
-import { Injectable } from '@angular/core';
-import { CanActivate } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
 
-@Injectable()
-export class AuthGuard implements CanActivate {
-  canActivate(): boolean {
-    return true;
-  }
-}
+export const authGuard: CanActivateFn = (route, state) => {
+  // Corporate dashboard auth guard — stub for Phase 3b
+  // Full SSO integration deferred to when SsoAuthService is shared
+  return true;
+};

@@ -1,10 +1,5 @@
-import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpInterceptorFn } from '@angular/common/http';
 
-@Injectable()
-export class AuditLoggingInterceptor implements HttpInterceptor {
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    return next.handle(req);
-  }
-}
+export const auditLoggingInterceptor: HttpInterceptorFn = (req, next) => {
+  return next(req);
+};
