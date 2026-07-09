@@ -11,6 +11,12 @@ This is a **realistic but non-production** Angular 14 monorepo that simulates th
 
 ---
 
+## Pull Request Workflow
+
+Use `.github/PULL_REQUEST_TEMPLATE/devin_pr_template.md` for every change so the summary, testing notes, and standards checklist stay consistent.
+
+---
+
 ## Repository Structure
 
 ```
